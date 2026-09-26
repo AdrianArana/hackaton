@@ -7,29 +7,63 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
         .tarjeta { background: white; padding: 20px; border-radius: 8px; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #0f62fe; }
         h1 { font-size: 24px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        input[type="file"] { margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <h1>Visor de Tráfico en Tiempo Real</h1>
-    <div id="resultados">
-        <p>Esperando conexión con el procesador de pagos...</p>
+    <h1>Orquestador de Migración PCI-DSS</h1>
+    
+    <div class="tarjeta">
+        <h3>Configuración de la Migración</h3>
+        <label>1. Reglas de Migración:</label> <input type="file" id="fileReglas"><br>
+        <label>2. Normativa (PCI-DSS):</label> <input type="file" id="fileNormativas"><br>
+        <label>3. Código Legacy a modernizar:</label> <input type="file" id="fileCodigo"><br><br>
+        
+        <button onclick="enviarArchivos()" style="padding: 10px; background: #0f62fe; color: white; border: none; cursor: pointer; border-radius: 4px;">Ejecutar Orquestador</button>
+    </div>
+
+    <div id="resultados" style="margin-top: 20px;">
+        <p>Esperando archivos para analizar...</p>
     </div>
 
     <script>
-        function cargarDatos() {
+        function enviarArchivos() {
+            const reglas = document.getElementById('fileReglas').files[0];
+            const normativas = document.getElementById('fileNormativas').files[0];
+            const codigo = document.getElementById('fileCodigo').files[0];
+
+            if (!reglas || !normativas || !codigo) return alert("Por favor, sube los 3 archivos requeridos.");
+
+            document.getElementById('resultados').innerHTML = "<div class='tarjeta'><p>Analizando normativas y refactorizando código en segundo plano...</p></div>";
+
+            const formData = new FormData();
+            formData.append("reglas", reglas);
+            formData.append("normativas", normativas);
+            formData.append("codigo", codigo);
+
+            fetch('/api/upload', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    // El visor de Flask recargará la pantalla automáticamente cuando FastAPI responda
+                    console.log("Archivos en proceso");
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Bucle para recargar la pantalla si el backend ha devuelto el código refactorizado
+        setInterval(() => {
             fetch('/api/datos')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('resultados').innerHTML = 
-                        `<div class="tarjeta">
-                            <strong>Estado de la Transacción:</strong> ${data.estado} <br><br>
-                            <strong>Detalles (Log):</strong> ${data.info}
-                        </div>`;
-                })
-                .catch(error => console.error('Error de conexión:', error));
-        }
-        // Refresca la web cada 2 segundos
-        setInterval(cargarDatos, 2000); 
+                    if (data.estado !== "En espera") {
+                        document.getElementById('resultados').innerHTML = 
+                            `<div class="tarjeta">
+                                <strong>Estado:</strong> ${data.estado} <br><br>
+                                <strong>Detalles:</strong><br> ${data.info}
+                            </div>`;
+                    }
+                });
+        }, 2000); 
     </script>
 </body>
 </html>
