@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Migración de Pagos</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .tarjeta { background: white; padding: 20px; border-radius: 8px; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #0f62fe; }
+        h1 { font-size: 24px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Visor de Tráfico en Tiempo Real</h1>
+    <div id="resultados">
+        <p>Esperando conexión con el procesador de pagos...</p>
+    </div>
+
+    <script>
+        function cargarDatos() {
+            fetch('/api/datos')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('resultados').innerHTML = 
+                        `<div class="tarjeta">
+                            <strong>Estado de la Transacción:</strong> ${data.estado} <br><br>
+                            <strong>Detalles (Log):</strong> ${data.info}
+                        </div>`;
+                })
+                .catch(error => console.error('Error de conexión:', error));
+        }
+        // Refresca la web cada 2 segundos
+        setInterval(cargarDatos, 2000); 
+    </script>
+</body>
+</html>
