@@ -3,3 +3,4 @@ httpx
 pytest
 pytest-asyncio
 pydantic
+flask
